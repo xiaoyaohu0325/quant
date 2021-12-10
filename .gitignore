@@ -1,0 +1,4 @@
+.DS_Store
+*.csv
+*.h5
+__pycache__/
