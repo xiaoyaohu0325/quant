@@ -129,7 +129,9 @@ def get_stock_data(code):
 
 
 def get_stock_data_between(code, start_date, end_date=datetime.date.today().isoformat()):
-    """获取股票交易数据"""
+    """获取股票交易数据
+    code, date, open, high, low, close, volume
+    """
     sql = "select * from stocks_daily_hfq where code='{}' and date>'{}' and date<'{}'".format(code, start_date, end_date)
 
     return query(sql)
@@ -241,6 +243,23 @@ def generate_avg_30_hdf(hdf_file):
 
         data.to_hdf(hdf_file, key="{}_{}".format(exchange, code), mode='a', complevel=4, complib="zlib")
         print(code, " avg30 created")
+
+
+def generate_close_price_hdf(hdf_file):
+    """生成每日收盘数据"""
+    companies = get_company_infos()
+
+    for company in companies:
+        code = company[0]
+        exchange = company[2]
+        data = get_stock_data(code)
+        df = pd.DataFrame(data, columns=["code", "date", "open", "high", "low", "close", "volume"])
+        df.set_index("date", inplace=True)
+
+        data = df.loc[:, "close"]
+
+        data.to_hdf(hdf_file, key="{}_{}".format(exchange, code), mode='a', complevel=4, complib="zlib")
+        print(code, " price created")
 
 
 def to_db_tuples(code, hist_df):
